@@ -15,6 +15,9 @@ SRCLR = 26           # GPIO 26 - O registo de deslocamento � limpo (ACTIVO BAI
 OFF = Value.INACTIVE
 ON = Value.ACTIVE
 
+# Valor por defeito de espera nas operacoes do registo de deslocamento
+WaitTimeSR = 0.1
+
 # Configuração para cada pino GPIO
 configs = {
     SER: gpiod.LineSettings(
@@ -34,39 +37,39 @@ configs = {
     ),
 }
 
-# Solicitação das linhas GPIO
+
+ # Solicitação das linhas GPIO
 request = gpiod.request_lines(
     "/dev/gpiochip4",
     consumer="controlo_GPIO's",
     config=configs
 )
+    
+def commandRelays(checkshift: str):
 
-# Valor por defeito de espera nas operacoes do registo de deslocamento
-WaitTimeSR = 0.1
+    #####################################################
+    # Tabela de verdade do Registo de Deslocamento
+    # SER | SRCLK | 'SRCLR | RCLK |  'OE | Sa�das/Fun��es
+    #  X      X       X       X       H    Q's inactivas
+    #  X      X       X       X       L    Q'S activos
+    #  X      X       L       X       X    SR limpo
+    #  L    + et      H       X       X    0 no SR
+    #  H    + et      H       X       X    1 no SR
+    #  X      X       X     +et       X   dados out
+    ######################################################
 
-#####################################################
-# Tabela de verdade do Registo de Deslocamento
-# SER | SRCLK | 'SRCLR | RCLK |  'OE | Sa�das/Fun��es
-#  X      X       X       X       H    Q's inactivas
-#  X      X       X       X       L    Q'S activos
-#  X      X       L       X       X    SR limpo
-#  L    + et      H       X       X    0 no SR
-#  H    + et      H       X       X    1 no SR
-#  X      X       X     +et       X   dados out
-######################################################
+    # Limpa o registo de deslocamento
+    request.set_value(SRCLR, OFF)
+    time.sleep(WaitTimeSR)
+    request.set_value(SRCLR, ON)
 
-# Limpa o registo de deslocamento
-request.set_value(SRCLR, OFF)
-time.sleep(WaitTimeSR)
-request.set_value(SRCLR, ON)
-
-# Enable do SR - sa�das sempre activas
-request.set_value(OE, OFF)
+    # Enable do SR - sa�das sempre activas
+    request.set_value(OE, OFF)
 
 # Fun��o que verifica e desloca os bits para armazenar no registo de deslocamento
 def SRoutput(checkshift):
     print(checkshift)
-    for i in range(8):
+    for i in range(7):
         shift = checkshift & 1
         print(shift)
 
