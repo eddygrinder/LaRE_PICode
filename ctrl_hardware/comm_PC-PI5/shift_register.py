@@ -45,8 +45,6 @@ request = gpiod.request_lines(
     config=configs
 )
     
-def commandRelays(checkshift: str):
-
     #####################################################
     # Tabela de verdade do Registo de Deslocamento
     # SER | SRCLK | 'SRCLR | RCLK |  'OE | Sa�das/Fun��es
@@ -58,28 +56,33 @@ def commandRelays(checkshift: str):
     #  X      X       X     +et       X   dados out
     ######################################################
 
-    # Limpa o registo de deslocamento
-    request.set_value(SRCLR, OFF)
-    time.sleep(WaitTimeSR)
-    request.set_value(SRCLR, ON)
+# Limpa o registo de deslocamento
+request.set_value(SRCLR, OFF)
+time.sleep(WaitTimeSR)
+request.set_value(SRCLR, ON)
 
-    # Enable do SR - sa�das sempre activas
-    request.set_value(OE, OFF)
+# Enable do SR - sa�das sempre activas
+request.set_value(OE, OFF)
 
 # Fun��o que verifica e desloca os bits para armazenar no registo de deslocamento
-def SRoutput(checkshift):
+def commandRelays(checkshift:str):
     print(checkshift)
-    for i in range(7):
-        shift = checkshift & 1
-        print(shift)
 
-        if shift == 1:
+    # Converter a string recebida para binário
+    binaryString = int(checkshift, 2)
+    #print(binaryString)
+    
+    for i in range(8):
+        binaryShift = binaryString & 1
+        print(binaryShift)
+
+        if binaryShift == 1:
             print ("UM")
             WriteReg (ON, WaitTimeSR)
         else:
             print ("ZERO")
             WriteReg(OFF, WaitTimeSR)
-        checkshift = checkshift >> 1
+        binaryString = binaryString >> 1
     OutputReg()
 
 # Defini��o da fun��o que envia os dados para o registo de deslocamento,
@@ -109,5 +112,5 @@ def OutputReg ():
     request.set_value(RCLK, OFF) #GPIO.output(RCLK, 0)
     time.sleep(WaitTimeSR)
     request.set_value(RCLK, ON) #GPIO.output(RCLK, 1)
-    time.sleep(10)
+    #time.sleep(10)
     #request.release()

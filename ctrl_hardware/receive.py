@@ -1,6 +1,6 @@
 import socket
 
-from shift_register import commandRelays
+#from shift_register import commandRelays
 
 # Endereço IP e porta de escuta
 HOST = ''  # Todos os endereços disponíveis
@@ -27,6 +27,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 break
             string = data.decode()
             print("Msg recebida:", string)
-            commandRelays(string)
+            #commandRelays(string)
        
         conn.close()
