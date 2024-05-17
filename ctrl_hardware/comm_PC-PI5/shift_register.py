@@ -9,13 +9,15 @@ import warnings
 SER = 5              # GPIO 5 - SER/DS (serial data input, SPI data)
 RCLK = 6             # GPIO 6 - RCLK/STCP
 SRCLK = 13           # GPIO 13 - SRCLK/SHCP (storage register clock pin, SPI clock)
-OE = 19              # GPIO 19 - Enable/Disable do SR
+OE_ohm = 19              # GPIO 19 - Enable/Disable do SR - OHM
 SRCLR = 26           # GPIO 26 - O registo de deslocamento � limpo (ACTIVO BAIXO)
+
+OE_meiaonda = 23         # GPIO 23 - Enable/Disable do SR - MEIA ONDA
 
 OFF = Value.INACTIVE
 ON = Value.ACTIVE
 
-# Valor por defeito de espera nas operacoes do registo de deslocamento
+# Valor por defeito de espera nas operações do registo de deslocamento
 WaitTimeSR = 0.1
 
 # Configuração para cada pino GPIO
@@ -29,10 +31,13 @@ configs = {
     SRCLK: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
-    OE: gpiod.LineSettings(
+    OE_ohm: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
     SRCLR: gpiod.LineSettings(
+        direction=Direction.OUTPUT, output_value=Value.ACTIVE
+    ),
+    OE_meiaonda: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
 }
@@ -61,18 +66,26 @@ request.set_value(SRCLR, OFF)
 time.sleep(WaitTimeSR)
 request.set_value(SRCLR, ON)
 
-# Enable do SR - sa�das sempre activas
-request.set_value(OE, OFF)
+# Ambos os Enables ficam desactivados por defeito
+request.set_value(OE_ohm, ON)
+request.set_value(OE_meiaonda, ON)
 
 # Fun��o que verifica e desloca os bits para armazenar no registo de deslocamento
 def commandRelays(checkshift:str):
+    n_bits = len(checkshift)
     print(checkshift)
 
     # Converter a string recebida para binário
     binaryString = int(checkshift, 2)
-    #print(binaryString)
     
-    for i in range(8):
+    if n_bits == 8: #CRITÉRIO - número de bits corresponmdendete aos 8 reles da lei de ohm 
+        # O critério para seleccionar qual o registo a activar é o número de bits recebido, caso 
+        # fossem iguais, poderia ser enviado um bit adicional de controlo
+        request.set_value(OE_ohm, OFF) # Activa o registo de deslocamento referente à lei de Ohm
+    elif n_bits == 7: #CRITÉRIO - número de bits corresponmdendete aos 7 reles da lei de meia onda
+        request.set_value(OE_meiaonda,OFF)  # Activa o registo de deslocamento referente à meia onda
+    
+    for i in range(n_bits):
         binaryShift = binaryString & 1
         print(binaryShift)
 

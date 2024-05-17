@@ -20,11 +20,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         conn, addr = s.accept()
         print('Conectado por', addr)
         
-        while True:    
+        while True:
             # Receber a mensagem
             data = conn.recv(1024)
             if not data:    
                 break
+                
             string = data.decode()
             print("Msg recebida:", string)
             commandRelays(string)
