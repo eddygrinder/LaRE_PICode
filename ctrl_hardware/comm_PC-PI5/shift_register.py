@@ -6,13 +6,15 @@ import time
 import warnings
 #warnings.filterwarnings("ignore")
 
-SER = 5              # GPIO 5 - SER/DS (serial data input, SPI data)
 RCLK = 6             # GPIO 6 - RCLK/STCP
 SRCLK = 13           # GPIO 13 - SRCLK/SHCP (storage register clock pin, SPI clock)
-OE_ohm = 19          # GPIO 19 - Enable/Disable do SR - OHM
 SRCLR = 26           # GPIO 26 - O registo de deslocamento � limpo (ACTIVO BAIXO)
 
-OE_meiaonda = 22     # GPIO 23 - Enable/Disable do SR - MEIA ONDA
+SER_OHM = 5              # GPIO 5 - SER/DS (serial data input, SPI data)
+OE_OHM = 19          # GPIO 19 - Enable/Disable do SR - OHM
+
+SER_MEIAONDA = 27    # GPIO 12 - SER/DS (serial data input, SPI data)
+OE_MEIAONDA = 22     # GPIO 23 - Enable/Disable do SR - MEIA ONDA
 
 OFF = Value.INACTIVE
 ON = Value.ACTIVE
@@ -22,7 +24,10 @@ WaitTimeSR = 0.1
 
 # Configuração para cada pino GPIO
 configs = {
-    SER: gpiod.LineSettings(
+    SER_OHM: gpiod.LineSettings(
+        direction=Direction.OUTPUT, output_value=Value.ACTIVE
+    ),
+    SER_MEIAONDA: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
     RCLK: gpiod.LineSettings(
@@ -31,13 +36,13 @@ configs = {
     SRCLK: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
-    OE_ohm: gpiod.LineSettings(
+    OE_OHM: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
     SRCLR: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
-    OE_meiaonda: gpiod.LineSettings(
+    OE_MEIAONDA: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
 }
@@ -67,8 +72,8 @@ time.sleep(WaitTimeSR)
 request.set_value(SRCLR, ON)
 
 # Ambos os Enables ficam desactivados por defeito
-request.set_value(OE_ohm, ON)
-request.set_value(OE_meiaonda, ON)
+request.set_value(OE_OHM, ON)
+request.set_value(OE_MEIAONDA, ON)
 
 # Fun��o que verifica e desloca os bits para armazenar no registo de deslocamento
 def commandRelays(checkshift:str):
@@ -82,11 +87,13 @@ def commandRelays(checkshift:str):
     if n_bits == 8: #CRITÉRIO - número de bits corresponmdendete aos 8 reles da lei de ohm 
         # O critério para seleccionar qual o registo a activar é o número de bits recebido, caso 
         # fossem iguais, poderia ser enviado um bit adicional de controlo
-        request.set_value(OE_meiaonda, ON) # Desactiva o registo de deslocamento referente à meia onda
-        request.set_value(OE_ohm, OFF) # Activa o registo de deslocamento referente à lei de Ohm
+        SER_pin_ctrl = SER_OHM
+        request.set_value(OE_MEIAONDA, ON) # Desactiva o registo de deslocamento referente à meia onda
+        request.set_value(OE_OHM, OFF) # Activa o registo de deslocamento referente à lei de Ohm
     elif n_bits == 9: #CRITÉRIO - número de bits corresponmdendete aos 7 reles da lei de meia onda
-        request.set_value(OE_ohm, ON)
-        request.set_value(OE_meiaonda,OFF)  # Activa o registo de deslocamento referente à meia onda
+        SER_pin_ctrl = SER_MEIAONDA
+        request.set_value(OE_OHM, ON)
+        request.set_value(OE_MEIAONDA,OFF)  # Activa o registo de deslocamento referente à meia onda
     
     for i in range(n_bits):
         binaryShift = binaryString & 1
@@ -94,10 +101,10 @@ def commandRelays(checkshift:str):
 
         if binaryShift == 1:
             print ("UM")
-            WriteReg (ON, WaitTimeSR)
+            WriteReg (ON, SER_pin_ctrl, WaitTimeSR)
         else:
             print ("ZERO")
-            WriteReg(OFF, WaitTimeSR)
+            WriteReg(OFF, SER_pin_ctrl, WaitTimeSR)
         binaryString = binaryString >> 1
     OutputReg()
 
@@ -110,8 +117,9 @@ def commandRelays(checkshift:str):
 ###### ... um segundo bit � enviado, repetindo os dois passos em cima - � repetido at� estarem armazenados 8 bits
 ######### Por ultimo � dado um impulso aos registos (RCLK/STCP) para obter os 8 bits na saida
 
-def WriteReg (WriteBit, WaitTimeSR):
-    request.set_value(SER, WriteBit) #GPIO.output (SER,WriteBit) # Envia o bit para o registo
+def WriteReg (WriteBit, SER_pin_ctrl:int,  WaitTimeSR:float):
+    print(SER_pin_ctrl)
+    request.set_value(SER_pin_ctrl, WriteBit) #GPIO.output (SER,WriteBit) # Envia o bit para o registo
     time.sleep (WaitTimeSR) # Espera 100ms
     request.set_value(SRCLK, ON) #GPIO.output(SRCLK,1)
     time.sleep(WaitTimeSR)
