@@ -101,7 +101,7 @@ def commandRelays(checkshift:str):
 
         if binaryShift == 1:
             print ("UM")
-            WriteReg (ON, SER_pin_ctrl, WaitTimeSR)
+            WriteReg (ON,SER_pin_ctrl, WaitTimeSR)
         else:
             print ("ZERO")
             WriteReg(OFF, SER_pin_ctrl, WaitTimeSR)
@@ -117,8 +117,7 @@ def commandRelays(checkshift:str):
 ###### ... um segundo bit � enviado, repetindo os dois passos em cima - � repetido at� estarem armazenados 8 bits
 ######### Por ultimo � dado um impulso aos registos (RCLK/STCP) para obter os 8 bits na saida
 
-def WriteReg (WriteBit, SER_pin_ctrl:int,  WaitTimeSR:float):
-    print(SER_pin_ctrl)
+def WriteReg (WriteBit, SER_pin_ctrl:int, WaitTimeSR:float):
     request.set_value(SER_pin_ctrl, WriteBit) #GPIO.output (SER,WriteBit) # Envia o bit para o registo
     time.sleep (WaitTimeSR) # Espera 100ms
     request.set_value(SRCLK, ON) #GPIO.output(SRCLK,1)
