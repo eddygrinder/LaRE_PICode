@@ -6,9 +6,13 @@ import time
 import warnings
 #warnings.filterwarnings("ignore")
 
-RCLK = 6             # GPIO 6 - RCLK/STCP
-SRCLK = 13           # GPIO 13 - SRCLK/SHCP (storage register clock pin, SPI clock)
-SRCLR = 26           # GPIO 26 - O registo de deslocamento � limpo (ACTIVO BAIXO)
+RCLK = 6             # GPIO 6 - RCLK/STCP - 17
+SRCLK = 13           # GPIO 13 - SRCLK/SHCP (storage register clock pin, SPI clock) - 4
+SRCLR = 26           # GPIO 26 - O registo de deslocamento � limpo (ACTIVO BAIXO) - 11
+
+RCLK_MEIAONDA = 17   # GPIO 11
+SRCLK_MEIAONDA = 4   # GPIO 4
+SRCLR_MEIAONDA = 11  # GPIO 11
 
 SER_OHM = 5              # GPIO 5 - SER/DS (serial data input, SPI data)
 OE_OHM = 19          # GPIO 19 - Enable/Disable do SR - OHM
@@ -27,6 +31,9 @@ configs = {
     SER_OHM: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
+    OE_OHM: gpiod.LineSettings(
+        direction=Direction.OUTPUT, output_value=Value.ACTIVE
+    ),
     SER_MEIAONDA: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
@@ -36,10 +43,16 @@ configs = {
     SRCLK: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
-    OE_OHM: gpiod.LineSettings(
+    SRCLR: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
-    SRCLR: gpiod.LineSettings(
+    RCLK_MEIAONDA: gpiod.LineSettings(
+        direction=Direction.OUTPUT, output_value=Value.ACTIVE
+    ),
+    SRCLK_MEIAONDA: gpiod.LineSettings(
+        direction=Direction.OUTPUT, output_value=Value.ACTIVE
+    ),
+    SRCLR_MEIAONDA: gpiod.LineSettings(
         direction=Direction.OUTPUT, output_value=Value.ACTIVE
     ),
     OE_MEIAONDA: gpiod.LineSettings(
@@ -66,10 +79,14 @@ request = gpiod.request_lines(
     #  X      X       X     +et       X   dados out
     ######################################################
 
-# Limpa o registo de deslocamento
+# Limpa os registos de deslocamento
 request.set_value(SRCLR, OFF)
 time.sleep(WaitTimeSR)
 request.set_value(SRCLR, ON)
+
+request.set_value(SRCLR_MEIAONDA, OFF)
+time.sleep(WaitTimeSR)
+request.set_value(SRCLR_MEIAONDA, ON)
 
 # Ambos os Enables ficam desactivados por defeito
 request.set_value(OE_OHM, ON)
@@ -100,10 +117,8 @@ def commandRelays(checkshift:str):
         print(binaryShift)
 
         if binaryShift == 1:
-            print ("UM")
             WriteReg (ON,SER_pin_ctrl, WaitTimeSR)
         else:
-            print ("ZERO")
             WriteReg(OFF, SER_pin_ctrl, WaitTimeSR)
         binaryString = binaryString >> 1
     OutputReg()
@@ -120,20 +135,20 @@ def commandRelays(checkshift:str):
 def WriteReg (WriteBit, SER_pin_ctrl:int, WaitTimeSR:float):
     request.set_value(SER_pin_ctrl, WriteBit) #GPIO.output (SER,WriteBit) # Envia o bit para o registo
     time.sleep (WaitTimeSR) # Espera 100ms
-    request.set_value(SRCLK, ON) #GPIO.output(SRCLK,1)
+    request.set_value(SRCLK_MEIAONDA, ON) #GPIO.output(SRCLK,1)
     time.sleep(WaitTimeSR)
-    request.set_value(SRCLK, OFF) #GPIO.output (SRCLK, 0)  # Clock - flanco POSITIVO
+    request.set_value(SRCLK_MEIAONDA, OFF) #GPIO.output (SRCLK, 0)  # Clock - flanco POSITIVO
 
 # Funcao que limpa o registo
 def register_clear ():
-    request.set_value(SRCLK,OFF) #GPIO.output(SRCLK, 0)
+    request.set_value(SRCLK_MEIAONDA,OFF) #GPIO.output(SRCLK, 0)
     time.sleep(WaitTimeSR) # espera 100ms
-    request.set_value(SRCLK,ON) #GPIO.output(SRCLK, 1)
+    request.set_value(SRCLK_MEIAONDA,ON) #GPIO.output(SRCLK, 1)
 
 # Armazenar o valor no registo
 def OutputReg ():
-    request.set_value(RCLK, OFF) #GPIO.output(RCLK, 0)
+    request.set_value(RCLK_MEIAONDA, OFF) #GPIO.output(RCLK, 0)
     time.sleep(WaitTimeSR)
-    request.set_value(RCLK, ON) #GPIO.output(RCLK, 1)
+    request.set_value(RCLK_MEIAONDA, ON) #GPIO.output(RCLK, 1)
     #time.sleep(10)
     #request.release()
