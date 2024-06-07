@@ -6,6 +6,21 @@ from shift_register import commandRelays
 HOST = ''  # Todos os endereços disponíveis
 PORT = 12345  # Porta de escuta
 
+def send_confirmation_back (acknowledge:str):
+    # Envia a string para o Raspberry PC
+    # Endereço IP e porta do Raspberry PC
+    HOST = '192.168.1.88'  # Substitua pelo endereço IP do Raspberry Pi
+    PORT = 12345  # Porta de escuta no Raspberry Pi 
+    
+        # Criar um socket TCP/IP
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        # Conectar-se ao servidor (Raspberry Pi)
+        s.connect((HOST, PORT))
+        
+        # Enviar a mensagem
+        s.sendall(acknowledge.encode())
+        print("Mensagem enviada com sucesso.")
+
 # Criar um socket TCP/IP
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     # Vincular o socket ao endereço e porta de escuta
@@ -28,6 +43,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 
             string = data.decode()
             print("Msg recebida:", string)
-            commandRelays(string)
-       
+            # Processar o comando
+            acknowledgment = commandRelays(string)
+            # Enviar confirmação de volta ao cliente
+            confirmation = 'True' if acknowledgment else 'False'
+            conn.sendall(confirmation.encode())
         conn.close()
+
