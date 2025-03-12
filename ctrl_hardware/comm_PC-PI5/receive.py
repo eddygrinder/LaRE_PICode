@@ -9,7 +9,7 @@ PORT = 12345  # Porta de escuta
 def send_confirmation_back (acknowledge:str):
     # Envia a string para o Raspberry PC
     # Endereço IP e porta do Raspberry PC
-    HOST = '192.168.1.88'  # Substitua pelo endereço IP do Raspberry Pi
+    HOST = '192.168.1.88'  # Substitua pelo endereço IP do Raspberry servidor
     PORT = 12345  # Porta de escuta no Raspberry Pi 
     
         # Criar um socket TCP/IP
