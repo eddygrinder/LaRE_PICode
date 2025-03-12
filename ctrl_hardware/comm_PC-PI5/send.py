@@ -1,7 +1,7 @@
 import socket
 
 # Endereço IP e porta do Raspberry Pi
-HOST = '192.168.1.75'  # Substitua pelo endereço IP do Raspberry Pi
+HOST = '192.168.1.77'  # Substitua pelo endereço IP do Raspberry Pi
 PORT = 12345  # Porta de escuta no Raspberry Pi
 
 # String a ser enviada
