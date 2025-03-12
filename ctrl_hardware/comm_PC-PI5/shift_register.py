@@ -120,10 +120,10 @@ def commandRelays(checkshift:str):
     for i in range(n_bits):
         binaryShift = binaryString & 1
         print(binaryShift)
+        #time.sleep(5)
 
         if binaryShift == 1:
             WriteReg (ON, SERCLK_pin_ctrl, SER_pin_ctrl, WaitTimeSR)
-            #time.sleep(2)
         else:
             WriteReg(OFF, SERCLK_pin_ctrl, SER_pin_ctrl, WaitTimeSR)
         binaryString = binaryString >> 1
