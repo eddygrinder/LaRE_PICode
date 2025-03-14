@@ -24,7 +24,7 @@ OFF = Value.INACTIVE
 ON = Value.ACTIVE
 
 # Valor por defeito de espera nas operações do registo de deslocamento
-WaitTimeSR = 0.1
+WaitTimeSR = 0.01
 
 # Configuração para cada pino GPIO
 configs = {
@@ -96,8 +96,8 @@ request.set_value(OE_MEIAONDA, ON)
 # Fun��o que verifica e desloca os bits para armazenar no registo de deslocamento
 def commandRelays(checkshift:str):
     n_bits = len(checkshift)
-    print (n_bits)
-    print(checkshift)
+    #print (n_bits)
+    #print(checkshift)
 
     # Converter a string recebida para binário
     binaryString = int(checkshift, 2)
@@ -119,7 +119,7 @@ def commandRelays(checkshift:str):
     
     for i in range(n_bits):
         binaryShift = binaryString & 1
-        print(binaryShift)
+        #print(binaryShift)
         #time.sleep(5)
 
         if binaryShift == 1:
