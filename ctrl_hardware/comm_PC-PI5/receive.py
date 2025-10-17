@@ -1,3 +1,19 @@
+#! /usr/bin/env python3
+
+"""
+===============================================================================
+ Projeto: LaRE - Laboratório Remoto Expansível
+ Ficheiro: receive.py
+ Autor: Eduardo Ramalhadeiro
+ Instituição: Instituto Superior de Engenharia do Porto (ISEP)
+ Curso: Mestrado em Engenharia Eletrotécnica e de Computadores
+ Data: Outubro de 2025
+
+ Descrição:
+    Recebe comandos via socket TCP/IP e controla os relés através de registos de deslocamento.
+===============================================================================
+"""
+
 import socket
 
 from shift_register import commandRelays
